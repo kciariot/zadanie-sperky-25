@@ -2,16 +2,16 @@
 
 namespace Services;
 
-use Exception;
+use Exceptions\ApiException;
 
-class Request
+class CurlRequesterService
 {
     /**
      * Only get request is needed for project
      *
-     * @throws Exception
+     * @throws ApiException
      */
-    public function sendGetRequest(string $url, array $params): array
+    public static function sendGetRequest(string $url, array $params): array
     {
         $ch = curl_init();
 
@@ -32,7 +32,7 @@ class Request
         if ($code >= 200 && $code < 300) {
             $res['data'] = json_decode($response, true)['data'] ?? [];
         } else {
-            throw new Exception($response, $code);
+            throw ApiException::apiResponseError($response);
         }
 
         curl_close($ch);
@@ -41,7 +41,7 @@ class Request
     }
 
 
-    public static function handleError(Exception $e): array
+    public static function handleError(ApiException $e): array
     {
         http_response_code($e->getCode());
 

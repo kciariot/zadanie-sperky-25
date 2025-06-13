@@ -1,13 +1,29 @@
-function loadNewMeowFacts() {
+function loadNewMeowFacts(button) {
+    if (button.classList.contains('disabled')) {
+        return;
+    }
+
+    button.classList.add('disabled');
+
     let form = document.querySelector('.form-container');
 
-    let params = new URLSearchParams({
+    let params = {
         request: 'loadNewMeowFacts',
-        id: form.querySelector('input[name="id"]').value,
-        count: form.querySelector('input[name="count"]').value,
-        lang: form.querySelector('select[name="lang"]').value,
-        "no-validation": form.querySelector('input[name="no-validation"]').checked ? 1 : 0
-    });
+    };
+
+    if (form.querySelector('input[name="id"]').value !== '') {
+        params.id = form.querySelector('input[name="id"]').value;
+    }
+
+    if (form.querySelector('input[name="count"]').value !== '') {
+        params.count = form.querySelector('input[name="count"]').value;
+    }
+
+    if (form.querySelector('select[name="lang"]').value !== '') {
+        params.lang = form.querySelector('select[name="lang"]').value;
+    }
+
+    params = new URLSearchParams(params);
 
     fetch(`index.php?${params}`, {method: 'GET'})
         .then(response => response.json())
@@ -21,9 +37,11 @@ function loadNewMeowFacts() {
             }
 
             updateMeowFactsDom(response.data);
+            button.classList.remove('disabled');
         })
         .catch(error => {
             displayError(error);
+            button.classList.remove('disabled');
         })
 }
 
