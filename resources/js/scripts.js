@@ -58,3 +58,20 @@ function updateMeowFactsDom(meowfacts) {
 function displayError(error) {
     document.querySelector('.meow-facts-content').innerHTML = `<div class='error'>${error}</div>`;
 }
+
+function validateMinNumber(element) {
+    let minimalValue = element.getAttribute('min');
+    let value = element.value;
+
+    if (typeof minimalValue === 'undefined' || minimalValue === '') {
+        return;
+    }
+
+    if (value === '') {
+        return;
+    }
+
+    if (value < minimalValue) {
+        element.value = minimalValue;
+    }
+}

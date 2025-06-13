@@ -25,6 +25,14 @@ class MeowFactsService
         'kor' => 'Korean'
     ];
 
+    const THROW_ERROR_LANGUAGE = 'svk';
+
+    // ID 0 gives random fact
+    const MIN_VALUES = [
+        'ID' => 1,
+        'COUNT' => 1
+    ];
+
     /**
      * @param MeowFactParametersDto $parameters
      * @return array
@@ -90,16 +98,24 @@ class MeowFactsService
         $validParameters = [];
 
         if ($parameters->getId() !== null) {
+            if ($parameters->getId() < self::MIN_VALUES['ID']) {
+                throw ApiException::parameterOutOfBounds('ID');
+            }
+
             $validParameters['id'] = $parameters->getId();
         }
 
         if ($parameters->getCount() !== null) {
+            if ($parameters->getCount() < self::MIN_VALUES['COUNT']) {
+                throw ApiException::parameterOutOfBounds('COUNT');
+            }
+
             $validParameters['count'] = $parameters->getCount();
         }
 
         if ($parameters->getLang() !== null) {
-            if ($parameters->getLang() !== 'svk' && !isset(self::ALLOWED_LANGUAGES[$parameters->getLang()])) {
-                throw ApiException::parameterOutOfBounds('Lang');
+            if ($parameters->getLang() !== self::THROW_ERROR_LANGUAGE && !isset(self::ALLOWED_LANGUAGES[$parameters->getLang()])) {
+                throw ApiException::parameterOutOfBounds('LANG');
             }
 
             $validParameters['lang'] = $parameters->getLang();

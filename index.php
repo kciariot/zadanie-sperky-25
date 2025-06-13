@@ -10,22 +10,22 @@ if (!empty($_GET['request']) && $_GET['request'] === 'loadNewMeowFacts') {
     try {
         $meowFactsParameters = new \Dto\MeowFactParametersDto();
 
-        if (!empty($_GET['id'])) {
+        if (isset($_GET['id'])) {
             $meowFactsParameters->setId(intval($_GET['id']));
         }
 
 
-        if (!empty($_GET['count'])) {
+        if (isset($_GET['count'])) {
             $meowFactsParameters->setCount(intval($_GET['count']));
         }
 
 
-        if (!empty($_GET['lang'])) {
+        if (isset($_GET['lang'])) {
             $meowFactsParameters->setLang(\Services\SanitizerService::sanitizeString($_GET['lang']));
         }
 
         $response = (new \Services\MeowFactsService())->loadMeowFacts($meowFactsParameters);
-    } catch (Exception $e) {
+    } catch (\Exceptions\ApiException $e) {
         $response = \Services\CurlRequesterService::handleError($e);
     }
 
@@ -49,12 +49,12 @@ $api = new \Services\MeowFactsService();
         <div class="form-container">
             <div class="form-row-container">
                 <label for="id">ID</label>
-                <input type="number" id="id" name="id" min="0" />
+                <input type="number" id="id" name="id" min="1" onchange="validateMinNumber(this)" />
             </div>
 
             <div class="form-row-container">
                 <label for="count">Count</label>
-                <input type="number" id="count" name="count" min="1" />
+                <input type="number" id="count" name="count" min="1" onchange="validateMinNumber(this)" />
             </div>
 
             <div class="form-row-container">
