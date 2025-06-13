@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Services;
 
 use Exceptions\ApiException;
@@ -7,8 +9,11 @@ use Exceptions\ApiException;
 class CurlRequesterService
 {
     /**
-     * Only get request is needed for project
+     * Sends GET request via CURL and process json response. Throws ApiException if server returned error.
      *
+     * @param string $url
+     * @param array $params
+     * @return array
      * @throws ApiException
      */
     public static function sendGetRequest(string $url, array $params): array
@@ -40,7 +45,12 @@ class CurlRequesterService
         return $res;
     }
 
-
+    /**
+     * Handle ApiException and sets response code for front-end
+     *
+     * @param ApiException $e
+     * @return array
+     */
     public static function handleError(ApiException $e): array
     {
         http_response_code($e->getCode());

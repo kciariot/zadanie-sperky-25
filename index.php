@@ -1,30 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 require 'src/Services/MeowFactsService.php';
 require 'src/Services/CurlRequesterService.php';
-require 'src/Services/SanitizerService.php';
+require 'src/Helpers/SanitizerHelper.php';
+require 'src/Helpers/HtmlRenderHelper.php';
 require 'src/Dto/MeowFactParametersDto.php';
 require 'src/Exceptions/ApiException.php';
+
+/**
+ * Ajax endpoint
+ */
 
 if (!empty($_GET['request']) && $_GET['request'] === 'loadNewMeowFacts') {
     try {
         $meowFactsParameters = new \Dto\MeowFactParametersDto();
 
-        if (isset($_GET['id'])) {
-            $meowFactsParameters->setId(intval($_GET['id']));
-        }
-
-
-        if (isset($_GET['count'])) {
-            $meowFactsParameters->setCount(intval($_GET['count']));
-        }
-
-
-        if (isset($_GET['lang'])) {
-            $meowFactsParameters->setLang(\Services\SanitizerService::sanitizeString($_GET['lang']));
-        }
-
-        $response = (new \Services\MeowFactsService())->loadMeowFacts($meowFactsParameters);
+        $response = (new \Services\MeowFactsService())->getMeowFacts($meowFactsParameters->getInstanceFromRequest());
     } catch (\Exceptions\ApiException $e) {
         $response = \Services\CurlRequesterService::handleError($e);
     }
@@ -33,8 +26,31 @@ if (!empty($_GET['request']) && $_GET['request'] === 'loadNewMeowFacts') {
     return;
 }
 
-$api = new \Services\MeowFactsService();
+/**
+ * First load run
+ */
 
+$meowFactsService = new \Services\MeowFactsService();
+
+/**
+ * Load first run facts and render content
+ */
+try {
+    $response = (new \Services\MeowFactsService())->getMeowFacts((new \Dto\MeowFactParametersDto()));
+
+    $content = \Helpers\HtmlRenderHelper::renderMeowFacts($response['data'] ?? []);
+} catch (\Exceptions\ApiException $e) {
+    $response = \Services\CurlRequesterService::handleError($e);
+
+    $content = \Helpers\HtmlRenderHelper::renderError($response['error']);
+}
+
+/**
+ * Generate language options list for select
+ */
+$optionsList = array_merge(['' => '-- not selected --'], $meowFactsService::getThrowErrorLanguages(), $meowFactsService::getAllowedLanguages());
+
+$optionsListContent = \Helpers\HtmlRenderHelper::renderOptionsList($optionsList);
 ?>
 
 <html lang="en">
@@ -60,16 +76,23 @@ $api = new \Services\MeowFactsService();
             <div class="form-row-container">
                 <label for="lang">Lang</label>
                 <select id="lang" name="lang">
-                    <?= $api->renderLanguageOptionsList() ?>
+                    <?= $optionsListContent ?>
                 </select>
             </div>
 
             <button type="button" onclick="loadNewMeowFacts(this)">Send</button>
+
+            <br>
+            <span class="disclaimer">* Parameter "COUNT" overrides parameter "ID". If "COUNT" is set even to 1, "ID" will be ignored.</span>
+
+            <br>
+            <span class="disclaimer">* Slovak language is not supported by API. I added it only to simulate API error response.</span>
+
             <hr>
         </div>
 
         <div class="meow-facts-content">
-            <?= $api->renderMeowFactsContent() ?>
+            <?= $content ?>
         </div>
     </div>
 

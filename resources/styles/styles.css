@@ -18,3 +18,8 @@
 hr {
     margin-bottom: 10px;
 }
+
+.disclaimer {
+    font-size: 0.8rem;
+    color: dimgrey;
+}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Services;
 
 use Dto\MeowFactParametersDto;
@@ -25,7 +27,10 @@ class MeowFactsService
         'kor' => 'Korean'
     ];
 
-    const THROW_ERROR_LANGUAGE = 'svk';
+    // Only to simulate error message
+    const THROW_ERROR_LANGUAGE = [
+        'svk' => 'Slovak (Throws API error)',
+    ];
 
     // ID 0 gives random fact
     const MIN_VALUES = [
@@ -34,56 +39,37 @@ class MeowFactsService
     ];
 
     /**
+     * Sends request to get new meow facts
+     *
      * @param MeowFactParametersDto $parameters
      * @return array
      * @throws ApiException
      */
-    public function loadMeowFacts(MeowFactParametersDto $parameters): array
+    public function getMeowFacts(MeowFactParametersDto $parameters): array
     {
-        $validParameters = $this->validateLoadMeowFactsParameters($parameters);
+        $validParameters = $this->validateMeowFactsParameters($parameters);
 
         return CurlRequesterService::sendGetRequest(self::API_URL, $validParameters);
     }
 
     /**
-     * Loads empty request and renders response to display meow fact on page load
+     * Only to simulate error message
      *
-     * @return string
+     * @return string[]
      */
-    public function renderMeowFactsContent(): string
+    public static function getThrowErrorLanguages(): array
     {
-        $content = '';
-
-        try {
-            $meowFacts = $this->loadMeowFacts(new MeowFactParametersDto());
-        } catch (ApiException $e) {
-            return "<div class='error'>{$e->getMessage()}</div>";
-        }
-
-        foreach ($meowFacts['data'] as $meowFact) {
-            $content .= "<div class='meow-fact'>$meowFact</div>";
-        }
-
-        return $content;
+        return self::THROW_ERROR_LANGUAGE;
     }
 
     /**
-     * Renders options list for language select for meow facts api
-     *  - SVK is added so we can simulate error message
+     * Returns languages currently supported by API provider
      *
-     * @return string
+     * @return string[]
      */
-    public function renderLanguageOptionsList(): string
+    public static function getAllowedLanguages(): array
     {
-        $optionsList = '';
-
-        $languages = array_merge(['' => '-- not selected --', 'svk' => 'Slovak (Not working)'], self::ALLOWED_LANGUAGES);
-
-        foreach ($languages as $langCode => $langName) {
-            $optionsList .= "<option value='$langCode'>$langName</option>";
-        }
-
-        return $optionsList;
+        return self::ALLOWED_LANGUAGES;
     }
 
     /**
@@ -93,7 +79,7 @@ class MeowFactsService
      * @return array
      * @throws ApiException
      */
-    private function validateLoadMeowFactsParameters(MeowFactParametersDto $parameters): array
+    private function validateMeowFactsParameters(MeowFactParametersDto $parameters): array
     {
         $validParameters = [];
 
@@ -114,7 +100,7 @@ class MeowFactsService
         }
 
         if ($parameters->getLang() !== null) {
-            if ($parameters->getLang() !== self::THROW_ERROR_LANGUAGE && !isset(self::ALLOWED_LANGUAGES[$parameters->getLang()])) {
+            if (!isset(self::THROW_ERROR_LANGUAGE[$parameters->getLang()]) && !isset(self::ALLOWED_LANGUAGES[$parameters->getLang()])) {
                 throw ApiException::parameterOutOfBounds('LANG');
             }
 

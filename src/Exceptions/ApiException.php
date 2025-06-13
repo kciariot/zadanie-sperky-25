@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Exceptions;
 
 use Exception;
@@ -11,6 +13,12 @@ class ApiException extends Exception
         'API_RESPONSE_ERROR' => 'API response error occurred'
     ];
 
+    /**
+     * Parameter did not met required criteria
+     *
+     * @param string $parameterName
+     * @return self
+     */
     public static function parameterOutOfBounds(string $parameterName = ''): self
     {
         $message = self::CODES['PARAMETER_OUT_OF_BOUNDS'];
@@ -22,6 +30,12 @@ class ApiException extends Exception
         return new self($message, 400);
     }
 
+    /**
+     * API response returned with error status code
+     *
+     * @param string $additionalInfo
+     * @return self
+     */
     public static function apiResponseError(string $additionalInfo = ''): self
     {
         $message = self::CODES['API_RESPONSE_ERROR'];
