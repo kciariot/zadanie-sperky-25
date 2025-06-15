@@ -2,47 +2,46 @@
 
 declare(strict_types=1);
 
+use Services\MeowFactsService;
+use Services\CurlRequesterService;
+use Services\RequestHandlerService;
+use Helpers\HtmlRenderHelper;
+use Helpers\SanitizerHelper;
+use Exceptions\ApiException;
+use Dto\MeowFactParametersDto;
+
 require 'src/Services/MeowFactsService.php';
 require 'src/Services/CurlRequesterService.php';
+require 'src/Services/RequestHandlerService.php';
 require 'src/Helpers/SanitizerHelper.php';
 require 'src/Helpers/HtmlRenderHelper.php';
-require 'src/Dto/MeowFactParametersDto.php';
 require 'src/Exceptions/ApiException.php';
+require 'src/Dto/MeowFactParametersDto.php';
 
 /**
  * Ajax endpoint
  */
-
-if (!empty($_GET['request']) && $_GET['request'] === 'loadNewMeowFacts') {
-    try {
-        $meowFactsParameters = new \Dto\MeowFactParametersDto();
-
-        $response = (new \Services\MeowFactsService())->getMeowFacts($meowFactsParameters->getInstanceFromRequest());
-    } catch (\Exceptions\ApiException $e) {
-        $response = \Services\CurlRequesterService::handleError($e);
-    }
-
-    echo json_encode($response);
+if (!empty($_GET['request'])) {
+    echo RequestHandlerService::handle(SanitizerHelper::sanitizeString($_GET['request']));
     return;
 }
 
 /**
- * First load run
+ * Site load
  */
-
-$meowFactsService = new \Services\MeowFactsService();
+$meowFactsService = new MeowFactsService();
 
 /**
- * Load first run facts and render content
+ * Get facts and render content
  */
 try {
-    $response = (new \Services\MeowFactsService())->getMeowFacts((new \Dto\MeowFactParametersDto()));
+    $response = (new MeowFactsService())->getMeowFacts((new MeowFactParametersDto()));
 
-    $content = \Helpers\HtmlRenderHelper::renderMeowFacts($response['data'] ?? []);
-} catch (\Exceptions\ApiException $e) {
-    $response = \Services\CurlRequesterService::handleError($e);
+    $content = HtmlRenderHelper::renderMeowFacts($response['data'] ?? []);
+} catch (ApiException $e) {
+    $response = CurlRequesterService::handleError($e);
 
-    $content = \Helpers\HtmlRenderHelper::renderError($response['error']);
+    $content = HtmlRenderHelper::renderError($response['error']);
 }
 
 /**
@@ -50,7 +49,7 @@ try {
  */
 $optionsList = array_merge(['' => '-- not selected --'], $meowFactsService::getThrowErrorLanguages(), $meowFactsService::getAllowedLanguages());
 
-$optionsListContent = \Helpers\HtmlRenderHelper::renderOptionsList($optionsList);
+$optionsListContent = HtmlRenderHelper::renderOptionsList($optionsList);
 ?>
 
 <html lang="en">
@@ -80,7 +79,7 @@ $optionsListContent = \Helpers\HtmlRenderHelper::renderOptionsList($optionsList)
                 </select>
             </div>
 
-            <button type="button" onclick="loadNewMeowFacts(this)">Send</button>
+            <button type="button" onclick="getNewMeowFacts(this)">Send</button>
 
             <br>
             <span class="disclaimer">* Parameter "COUNT" overrides parameter "ID". If "COUNT" is set even to 1, "ID" will be ignored.</span>

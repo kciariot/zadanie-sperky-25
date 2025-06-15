@@ -30,19 +30,13 @@ class CurlRequesterService
         $response = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
 
-        $res = [
-            'code' => $code,
-        ];
+        curl_close($ch);
 
         if ($code >= 200 && $code < 300) {
-            $res['data'] = json_decode($response, true)['data'] ?? [];
+            return ['data' => json_decode($response, true)['data'] ?? []];
         } else {
             throw ApiException::apiResponseError($response);
         }
-
-        curl_close($ch);
-
-        return $res;
     }
 
     /**

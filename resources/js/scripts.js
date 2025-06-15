@@ -1,16 +1,14 @@
-function loadNewMeowFacts(button) {
-    if (button.classList.contains('disabled')) {
-        return;
-    }
-
-    button.classList.add('disabled');
+function getNewMeowFacts(button) {
+    // Prevent spamming request
+    button.setAttribute('disabled', true);
 
     let form = document.querySelector('.form-container');
 
     let params = {
-        request: 'loadNewMeowFacts',
+        request: 'getNewMeowFacts',
     };
 
+    // Minimize data sent in request
     if (form.querySelector('input[name="id"]').value !== '') {
         params.id = form.querySelector('input[name="id"]').value;
     }
@@ -23,6 +21,7 @@ function loadNewMeowFacts(button) {
         params.lang = form.querySelector('select[name="lang"]').value;
     }
 
+    // Parse object into GET parameters
     params = new URLSearchParams(params);
 
     fetch(`index.php?${params}`, {method: 'GET'})
@@ -37,11 +36,11 @@ function loadNewMeowFacts(button) {
             }
 
             updateMeowFactsDom(response.data);
-            button.classList.remove('disabled');
+            button.removeAttribute('disabled');
         })
         .catch(error => {
             displayError(error);
-            button.classList.remove('disabled');
+            button.removeAttribute('disabled');
         })
 }
 

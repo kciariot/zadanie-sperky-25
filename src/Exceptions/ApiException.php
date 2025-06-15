@@ -9,8 +9,9 @@ use Exception;
 class ApiException extends Exception
 {
     const CODES = [
-        'PARAMETER_OUT_OF_BOUNDS' => 'Parameter value is out of bound',
-        'API_RESPONSE_ERROR' => 'API response error occurred'
+        'PARAMETER_OUT_OF_BOUNDS' => 'The provided parameter value is outside the acceptable range. Please adjust it and try again.',
+        'API_RESPONSE_ERROR' => 'An error occurred while processing your request. Please check the request parameters and try again.',
+        'UNKNOWN_REQUEST' => 'Invalid request. The endpoint you are trying to reach does not exist or is improperly formatted.'
     ];
 
     /**
@@ -45,5 +46,15 @@ class ApiException extends Exception
         }
 
         return new self($message, 400);
+    }
+
+    /**
+     * Unrecognized request parameter has been submitted
+     *
+     * @return self
+     */
+    public static function unknownRequest(): self
+    {
+        return new self(self::CODES['UNKNOWN_REQUEST'], 400);
     }
 }
